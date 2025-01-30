@@ -8,44 +8,45 @@
 // @match        https://yts.mx/browse-movies/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=yts.mx
 // @grant        none
+// @updateURL    https://github.com/neo725/monkey-scripts/blob/main/movies/yts.mx.info.js
+// @downloadURL  https://github.com/neo725/monkey-scripts/blob/main/movies/yts.mx.info.js
+// @require      http://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js
 // ==/UserScript==
-
-(function() {
+/* globals jQuery, $, waitForKeyElements */
+$(function() {
     'use strict';
 
-    const addJquery = (callback) => {
-        var script = document.createElement("script");
-        script.setAttribute("src", "//cdnjs.cloudflare.com/ajax/libs/jquery/1.9.1/jquery.min.js");
-        script.addEventListener('load', function() {
-            var script = document.createElement("script");
-            script.textContent = "window.jQ = jQuery.noConflict(true);(" + callback.toString() + ")();";
-            document.body.appendChild(script);
-        }, false);
-        document.body.appendChild(script);
-    };
-
-    const _main_ = function () {
-        const category_i18nMap = [
-            { 'Action': '動作' },
-            { 'Comedy': '喜劇' },
-            { 'Drama':  '劇情' },
-            { 'Romance': '浪漫' },
-            { 'Crime': '犯罪' },
-            { 'Adventure': '冒險' },
-            { 'Biography': '傳記' },
-            { 'Horror': '恐怖' },
-            { 'Family': '家庭' },
-            { 'Thriller': '驚悚' },
-            { 'Animation': '動畫' },
-            { 'Sci-Fi': '科幻' },
-            { 'Documentary': '紀錄片' },
-            { 'History': '歷史' },
-            { 'Fantasy': '奇幻' },
-            { 'Musical': '音樂劇' },
-            { 'Music': '音樂' },
-        ];
+    const lang = 'zh-TW';
+    const category_i18nMap = [
+        {
+            'lang': 'zh-TW',
+            'dict': [
+                { 'Action': '動作' },
+                { 'Comedy': '喜劇' },
+                { 'Drama':  '劇情' },
+                { 'Romance': '浪漫' },
+                { 'Crime': '犯罪' },
+                { 'Adventure': '冒險' },
+                { 'Biography': '傳記' },
+                { 'Horror': '恐怖' },
+                { 'Family': '家庭' },
+                { 'Thriller': '驚悚' },
+                { 'Animation': '動畫' },
+                { 'Sci-Fi': '科幻' },
+                { 'Documentary': '紀錄片' },
+                { 'History': '歷史' },
+                { 'Fantasy': '奇幻' },
+                { 'Musical': '音樂劇' },
+                { 'Music': '音樂' },
+            ]
+        }
+    ];
+    
+    const _main_ = function (i18n) {
         const _tmdbUrl = 'https://www.themoviedb.org/search?query=';
-        const __main_ = ($) => {
+        // find map by lang in category_i18nMap
+        const categoryMap = i18n.find(item => item['lang'] == lang) || {};
+        const __main_ = ($, categoryMap) => {
             const selector = {
                 movie: '.browse-content .browse-movie-wrap',
                 category: 'a.browse-movie-link figure figcaption h4',
@@ -80,9 +81,10 @@
                     .attr('class', 'info-title')
                     .attr('target', '_blank');
                 return a;
-            }
+            };
+            
             const getCategoryTextMap = (category) => {
-                const result = category_i18nMap.find(item => item[category]);
+                const result = categoryMap.find(item => item[category]);
 
                 // 取出對應的值
                 const translation = result ? result[category] : null;
@@ -165,17 +167,7 @@ style.textContent = `
             });
         };
 
-
-        const waitjQuery = () => {
-            if (window.jQ) {
-                __main_(window.jQ);
-                return;
-            }
-            setTimeout(waitjQuery, 1000);
-        };
-        setTimeout(waitjQuery, 1000);
-
+        __main_($, categoryMap['dict'] || []);
     };
-
-    addJquery(_main_);
-})();
+    _main_(category_i18nMap);
+});
